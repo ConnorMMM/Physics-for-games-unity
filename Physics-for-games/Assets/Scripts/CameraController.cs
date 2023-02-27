@@ -17,7 +17,6 @@ public class CameraController : MonoBehaviour
     private float _setDistance;
     private float _currentDistance;
     
-
     void Awake()
     {
         _setDistance = minDistance + ((maxDistance - minDistance) * .5f);

@@ -11,7 +11,7 @@ public class PendulumController : MonoBehaviour
     {
         if(endObject)
         {
-            endObject.transform.position = transform.position + transform.right * 4.5f;
+            endObject.transform.position = transform.position + transform.right * 2f;
             endObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition;
         }
     }

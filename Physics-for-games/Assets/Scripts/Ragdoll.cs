@@ -5,8 +5,10 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public class Ragdoll : MonoBehaviour
 {
-    private Animator _animator = null;
     public List<Rigidbody> rigidbodies = new List<Rigidbody>();
+
+    private Animator _animator = null;
+    private CharacterMover _characterMover = null;
 
     public bool ragdollOn 
     { 
@@ -14,6 +16,8 @@ public class Ragdoll : MonoBehaviour
         set { _animator.enabled = !value;
             foreach (Rigidbody rb in rigidbodies)
                 rb.isKinematic = !value;
+            if(_characterMover)
+                _characterMover._isRagdoll = value;
         }
     }
 
@@ -21,6 +25,8 @@ public class Ragdoll : MonoBehaviour
     void Start()
     {
         _animator = GetComponent<Animator>();
+        _characterMover = GetComponent<CharacterMover>();
+
         foreach (Rigidbody rb in rigidbodies)
             rb.isKinematic = true;
     }
