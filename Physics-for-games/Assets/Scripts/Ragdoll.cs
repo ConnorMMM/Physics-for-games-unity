@@ -17,7 +17,9 @@ public class Ragdoll : MonoBehaviour
             foreach (Rigidbody rb in rigidbodies)
                 rb.isKinematic = !value;
             if(_characterMover)
-                _characterMover._isRagdoll = value;
+                _characterMover.GoRagdoll(value);
+            if(value)
+                rigidbodies[0].AddForce(_characterMover.GetVelocity(), ForceMode.Impulse);
         }
     }
 

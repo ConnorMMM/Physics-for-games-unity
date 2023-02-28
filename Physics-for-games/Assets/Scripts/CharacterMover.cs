@@ -10,7 +10,10 @@ public class CharacterMover : MonoBehaviour
     public float jumpHeight = 4;
     public float turnSpeed = 6;
 
+    public float deathTriggerHeight = -19.5f;
+
     private CharacterController _cc;
+    private Rigidbody _rb;
     private Transform _camera;
     private Animator _animator;
     private Ragdoll ragdollScript = null;
@@ -29,6 +32,7 @@ public class CharacterMover : MonoBehaviour
     void Awake()
     {
         _cc = GetComponent<CharacterController>();
+        _rb = GetComponent<Rigidbody>();
         _camera = Camera.main.transform;
         _animator = GetComponent<Animator>();
         ragdollScript = GetComponent<Ragdoll>();
@@ -46,27 +50,20 @@ public class CharacterMover : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.R))
         {
-            if(_isRagdoll)
+            if (_isRagdoll)
             {
                 Transform childTransform = transform.GetChild(1);
                 transform.position = new Vector3(childTransform.position.x, transform.position.y, childTransform.position.z);
             }
             ragdollScript.ragdollOn = !ragdollScript.ragdollOn;
         }
+
+        if (transform.GetChild(1).position.y <= deathTriggerHeight)
+            Respawn();
     }
 
     private void FixedUpdate()
     {
-        if(_isRagdoll && _cc.enabled)
-        {
-            _cc.enabled = false;
-        }
-        if(!_isRagdoll && !_cc.enabled)
-        {
-            _cc.enabled = true;
-        }
-
-
         // Find the horizontal unit vector facing forward from the camera
         Vector3 camForward = _camera.forward;
         camForward.y = 0;
@@ -109,9 +106,19 @@ public class CharacterMover : MonoBehaviour
 
         CheckCheckpoint();
 
-        _cc.Move(_velocity * Time.fixedDeltaTime);
+        Vector3 groundVel = new Vector3();
+        RaycastHit hit;
+        Debug.DrawRay(transform.position, -transform.up * 50, Color.red, 10);
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 1))
+        {
+            if(hit.rigidbody)
+                groundVel = hit.rigidbody.velocity;
+            Debug.Log(groundVel.z);
+        }
+
+        _cc.Move((_velocity + groundVel)  * Time.fixedDeltaTime);
         _isGrounded = _cc.isGrounded;
-        
+
         if(!_isRagdoll)
         {
             Quaternion temp = Quaternion.Slerp(new Quaternion(transform.forward.x, transform.forward.y, transform.forward.z, 1),
@@ -132,15 +139,32 @@ public class CharacterMover : MonoBehaviour
 
     private void CheckCheckpoint()
     {
-        if(_cc.isGrounded && _hitDirection.magnitude > 0)
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 1))
         {
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position, _hitDirection, out hit, 1))
+            CheckPoint checkpoint = hit.collider.GetComponent<CheckPoint>();
+            if (checkpoint)
             {
-                CheckPoint checkpoint = hit.collider.GetComponent<CheckPoint>();
-                if (checkpoint)
-                    respawnPoint = checkpoint.GetRespawnPoint();
+                respawnPoint = checkpoint.GetRespawnPoint();
             }
         }
+    }
+
+    public void Respawn()
+    {
+        transform.position = respawnPoint.position;
+        transform.rotation = respawnPoint.rotation;
+        ragdollScript.ragdollOn = false;
+    }
+
+    public void GoRagdoll(bool value)
+    {
+        _isRagdoll = value;
+        _cc.enabled = !value;
+    }
+
+    public Vector3 GetVelocity()
+    {
+        return _cc.velocity;
     }
 }
