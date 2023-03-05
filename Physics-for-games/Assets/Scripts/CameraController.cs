@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
     public float speed = 180;
     public float minDistance = 2;
     public float maxDistance = 10;
+    public float defualtDistance = 4;
     public float relaxSpeed = 5;
     public float zoomSpeed = 4;
     public float heightOffset = 1.5f;
@@ -19,7 +20,7 @@ public class CameraController : MonoBehaviour
     
     void Awake()
     {
-        _setDistance = minDistance + ((maxDistance - minDistance) * .5f);
+        _setDistance = defualtDistance;
         _currentDistance = _setDistance;
     }
 
