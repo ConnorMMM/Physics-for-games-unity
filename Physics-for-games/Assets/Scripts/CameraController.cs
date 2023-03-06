@@ -22,23 +22,25 @@ public class CameraController : MonoBehaviour
     {
         _setDistance = defualtDistance;
         _currentDistance = _setDistance;
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Right drag rotates the camera
-        if (Input.GetMouseButton(1))
-        {
-            Vector3 angles = transform.eulerAngles;
-            float dx = -Input.GetAxis("Mouse Y");
-            float dy = Input.GetAxis("Mouse X");
-            // look up and down by rotating around X-axis
-            angles.x = Mathf.Clamp(angles.x + dx * speed * Time.deltaTime, 0, 70);
-            // spin the camera round
-            angles.y += dy * speed * Time.deltaTime;
-            transform.eulerAngles = angles;
-        }
+
+
+        // Rotates the camera
+        Vector3 angles = transform.eulerAngles;
+        float dx = -Input.GetAxis("Mouse Y");
+        float dy = Input.GetAxis("Mouse X");
+        // look up and down by rotating around X-axis
+        angles.x = Mathf.Clamp(angles.x + dx * speed * Time.deltaTime, 0, 70);
+        // spin the camera round
+        angles.y += dy * speed * Time.deltaTime;
+        transform.eulerAngles = angles;
 
         // Zoom in/out with mouse wheel
         _setDistance = Mathf.Clamp(_setDistance - Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, minDistance, maxDistance);

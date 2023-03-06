@@ -6,11 +6,14 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class CharacterMover : MonoBehaviour
 {
+    public UIManager uiManager;
+
     public float movementSpeed = 10;
     public float jumpHeight = 4;
     public float turnSpeed = 6;
 
     public float deathTriggerHeight = -19.5f;
+    public LayerMask jumpSurfaces;
 
     private CharacterController _cc;
     private Rigidbody _rb;
@@ -23,7 +26,7 @@ public class CharacterMover : MonoBehaviour
     public bool _isGrounded = false;
     public bool _isRagdoll = false;
 
-    private Vector3 _velocity = new Vector3();
+    public Vector3 velocity = new Vector3();
 
     private Vector3 _hitDirection = new Vector3();
 
@@ -76,20 +79,20 @@ public class CharacterMover : MonoBehaviour
         Vector3 delta = (_moveInput.x * camRight + _moveInput.y * camForward) * movementSpeed;
         if(_isGrounded || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
         {
-            _velocity.x = delta.x;
-            _velocity.z = delta.z;
+            velocity.x = delta.x;
+            velocity.z = delta.z;
         }
 
         // Check for jumping
         if (_jumpInput && OnGround())
-            _velocity.y = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
+            velocity.y = Mathf.Sqrt(-2 * Physics.gravity.y * jumpHeight);
 
         // Check if we've hit ground from falling. If so, remove our velocity
-        if (_isGrounded && _velocity.y < 0)
-            _velocity.y = 0;
+        if (_isGrounded && velocity.y < 0)
+            velocity.y = 0;
 
         // Apply gravity
-        _velocity += Physics.gravity * Time.fixedDeltaTime;
+        velocity += Physics.gravity * Time.fixedDeltaTime;
 
         if (!_isGrounded)
             _hitDirection = Vector3.zero;
@@ -101,7 +104,7 @@ public class CharacterMover : MonoBehaviour
             horizontalHitDirection.y = 0;
             float displacment = horizontalHitDirection.magnitude;
             if (displacment > 0.3f)
-                _velocity -= 0.2f * horizontalHitDirection / displacment;
+                velocity -= 0.2f * horizontalHitDirection / displacment;
         }
 
         CheckCheckpoint();
@@ -113,10 +116,10 @@ public class CharacterMover : MonoBehaviour
         {
             if(hit.rigidbody)
                 groundVel = hit.rigidbody.velocity;
-            Debug.Log(groundVel.z);
+            Debug.Log($"x:  {groundVel.x}, y: {groundVel.y}, z: {groundVel.z}");
         }
 
-        _cc.Move((_velocity + groundVel)  * Time.fixedDeltaTime);
+        _cc.Move((velocity + groundVel)  * Time.fixedDeltaTime);
         _isGrounded = _cc.isGrounded;
 
         if(!_isRagdoll)
@@ -155,6 +158,8 @@ public class CharacterMover : MonoBehaviour
         transform.position = respawnPoint.position;
         transform.rotation = respawnPoint.rotation;
         ragdollScript.ragdollOn = false;
+
+        uiManager.AddDeath();
     }
 
     public void GoRagdoll(bool value)
